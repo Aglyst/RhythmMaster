@@ -1,15 +1,16 @@
-import React, {useCallback} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 
-class Beat{                           
+export class Beat{                           
   frequency = 440;
-  duration; //ms, time till next note
+  // duration; //ms, time till next note
   // subDivision;
 }
 
-class Bar{
+export class Bar{
   timeSigNum = 4;
   timeSigDenom = 4;
   barDuration = 0;
+  beatDuration = 0;
   beats = []
 
   constructor(timeSigNum, timeSigDenom, beats){
@@ -35,66 +36,97 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
   const beats = []
   for (let i = 0; i < timeSigNum; i++){
     const newBeat = new Beat();
-    newBeat.duration = (4/timeSigDenom) * quarterNoteDuration;
     beats.push(newBeat)
   }
 
   const newBar = new Bar(4, 4, beats);
   newBar.totalBarDuration = totalBarDuration;
+  newBar.beatDuration = (4/timeSigDenom) * quarterNoteDuration;
 
   return newBar;
 }
 
-function playNote(beat){
-  const time = audioContext.currentTime;
-  const oscillator = audioContext.createOscillator();
-          const envelope = audioContext.createGain();
-  
-          oscillator.frequency.value = beat.frequency;
-          envelope.gain.value = 1;
-          envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
-          envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
-  
-          oscillator.connect(envelope);
-          envelope.connect(audioContext.destination);
-
-          oscillator.start(time);
-          oscillator.stop(time + 0.02);
-          setTimeout(() => {}, beat.duration);
-}
+const worker = new Worker("./src/worker.js");
 
 export default function Metronome(props) {
     const {audioContext} = props;
 
-    const playNote = useCallback((beat) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentBar, setBar] = useState();
+    const [bpm, setBPM] = useState(120);
+    const [tsNumerator, setTSN] = useState(4);
+    const [tsDenominator, setTSD] = useState(4);
+
+    const [beatIndex, setBeatIndex] = useState(0);
+
+    useEffect(() => {
+      setBar(constructBar(bpm, tsNumerator, tsDenominator))
+    }, [bpm, tsNumerator, tsDenominator])
+
+
+    worker.onmessage = (message) => {
       const time = audioContext.currentTime;
+
       const oscillator = audioContext.createOscillator();
-      const envelope = audioContext.createGain();
+      oscillator.frequency.value = currentBar.beats[beatIndex].frequency;
+      const gainNode = audioContext.createGain();
 
-      oscillator.frequency.value = beat.frequency;
-      envelope.gain.value = 1;
-      envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
-      envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
+      gainNode.gain.value = 1;
+      gainNode.gain.exponentialRampToValueAtTime(1, time + 0.001);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
 
-      oscillator.connect(envelope);
-      envelope.connect(audioContext.destination);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
       oscillator.start(time);
       oscillator.stop(time + 0.02);
-      setTimeout(() => {console.log(audioContext)}, beat.duration);
-    },[])
 
-    const togglePlay = useCallback(
-      () => {
-        const bar = constructBar(120, 4, 4)
-        bar.beats.forEach((beat) => {
-          playNote(beat);
-        })
-      },
-      [],
-    )
+      if (beatIndex == tsNumerator - 1){
+        setBeatIndex(0);
+        return;
+      }
+      setBeatIndex(beatIndex + 1);
+    }
 
+    // const playBeat = useCallback(
+    //   (freq, time) => {
+        
+    //     const oscillator = audioContext.createOscillator();
+    //     oscillator.frequency.value = freq;
+    //     const gainNode = audioContext.createGain();
+
+    //     gainNode.gain.value = 1;
+    //     gainNode.gain.exponentialRampToValueAtTime(1, time + 0.001);
+    //     gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
+
+    //     oscillator.connect(gainNode);
+    //     gainNode.connect(audioContext.destination);
+
+    //     oscillator.start(time);
+    //     oscillator.stop(time + 0.02);
+
+    //     // console.log(freq + " " + time);
+    //   }
+    // )
 
     return (
-        <button onClick={togglePlay}>Play</button>
+        <button
+        onClick={
+          () => {
+            if (isPlaying){
+              setIsPlaying(false);
+              worker.postMessage({type:"Stop"})
+              return;
+            }
+    
+            setIsPlaying(true)
+            if (currentBar == null){
+              const newBar = constructBar(120, 4, 4);
+              setBar(newBar);
+            }
+
+            worker.postMessage({type:"Start", dur:currentBar.beatDuration});
+          }
+        }>{!isPlaying ? "Play" : "Stop"}</button>
     )
 }

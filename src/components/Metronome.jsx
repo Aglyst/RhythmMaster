@@ -1,5 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react'
 
+import BeatVisual from './BeatVisual';
+
 export class Beat{                           
   frequency = 440;
   // duration; //ms, time till next note
@@ -61,6 +63,10 @@ export default function Metronome(props) {
 
     useEffect(() => {
       setBar(constructBar(bpm, tsNumerator, tsDenominator))
+      if (isPlaying){
+        worker.postMessage({type:"Stop"})
+        worker.postMessage({type:"Start", dur:currentBar.beatDuration});
+      }
     }, [bpm, tsNumerator, tsDenominator])
 
 
@@ -110,23 +116,60 @@ export default function Metronome(props) {
     // )
 
     return (
-        <button
-        onClick={
-          () => {
-            if (isPlaying){
-              setIsPlaying(false);
-              worker.postMessage({type:"Stop"})
-              return;
-            }
-    
-            setIsPlaying(true)
-            if (currentBar == null){
-              const newBar = constructBar(120, 4, 4);
-              setBar(newBar);
-            }
+      <div className={'min-h-screen flex flex-col justify-center gap-20 shadow-[0_0_150px_inset_rgba(0,89,255,0.253)]'}>
+        <BeatVisual/>
+        <div className='flex flex-row gap-20 justify-center items-center'>
+          <div className='flex flex-col align-middle text-center'>
+            <label className='text-white place-items-center'>{bpm + " BPM"}</label>
+            <input type='range' max={500} min={1} value={bpm} onChange={(e) => {setBPM(e.target.value)}}/>
+          </div>
+          <div className='flex flex-col gap-1 justify-center max-w-25'>
+            <select className='rounded-2xl text-white bg-slate-900 text-center appearance-none p-5' value={tsNumerator} onChange={(e) => {setTSN(e.target.value)}}>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4} >4</option>
+              <option value={5}>5</option>
+              <option value={6}>6</option>
+              <option value={7}>7</option>
+              <option value={8}>8</option>
+              <option value={9}>9</option>
+              <option value={10}>10</option>
+              <option value={11}>11</option>
+              <option value={12}>12</option>
+            </select>
+            <hr className='m-1'/>
+            <select className='rounded-2xl text-white bg-slate-900 text-center appearance-none p-5' value={tsDenominator} onChange={(e) => {setTSD(e.target.value)}}>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={4}>4</option>
+              <option value={8}>8</option>
+              <option value={16}>16</option>
+            </select>
+          </div>
+        </div>
+        <div className='flex flex-row justify-center'>
+          <button className='text-white rounded p-3 px-4 border-blue-200 border-2'
+          onClick={
+            () => {
+              if (isPlaying){
+                setIsPlaying(false);
+                worker.postMessage({type:"Stop"})
+                return;
+              }
+            
+              setIsPlaying(true)
+              if (currentBar == null){
+                const newBar = constructBar(120, 4, 4);
+                setBar(newBar);
+              }
 
-            worker.postMessage({type:"Start", dur:currentBar.beatDuration});
-          }
-        }>{!isPlaying ? "Play" : "Stop"}</button>
+              worker.postMessage({type:"Start", dur:currentBar.beatDuration});
+            }
+          }>{!isPlaying ? "Play" : "Stop"}
+          </button>
+        </div>
+
+      </div>
     )
 }

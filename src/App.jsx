@@ -35,17 +35,10 @@ import bottle from "./assets/sounds/bottle.mp3"
 function App() {
   const audioContext = new AudioContext();
   
-  // function firstLoad(){
-  //   if (!loaded) {
-  //     audioContext.resume();
-  //     loaded = true;
-  //   }
-  // }
-
   return (
-    <>
+    <main className='min-h-screen flex flex-col bg-black'>
       <Metronome audioContext={audioContext}/>
-    </>
+    </main>
   )
 }
 

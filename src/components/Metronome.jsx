@@ -1,11 +1,14 @@
 import React, {useCallback, useEffect, useState} from 'react'
 
 import BeatVisual from './BeatVisual';
+import {colors} from '../colors';
 
 export class Beat{                           
   frequency = 440;
   // duration; //ms, time till next note
   // subDivision;
+  
+  id;
 }
 
 export class Bar{
@@ -38,6 +41,7 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
   const beats = []
   for (let i = 0; i < timeSigNum; i++){
     const newBeat = new Beat();
+    newBeat.id = i;
     beats.push(newBeat)
   }
 
@@ -54,12 +58,13 @@ export default function Metronome(props) {
     const {audioContext} = props;
 
     const [isPlaying, setIsPlaying] = useState(false);
-    const [currentBar, setBar] = useState();
     const [bpm, setBPM] = useState(120);
     const [tsNumerator, setTSN] = useState(4);
     const [tsDenominator, setTSD] = useState(4);
 
+    const [currentBar, setBar] = useState(constructBar(bpm, tsNumerator, tsDenominator));
     const [beatIndex, setBeatIndex] = useState(0);
+    const [forceUpdateBool, forceUpdate] = useState(false);
 
     useEffect(() => {
       setBar(constructBar(bpm, tsNumerator, tsDenominator))
@@ -87,6 +92,7 @@ export default function Metronome(props) {
       oscillator.start(time);
       oscillator.stop(time + 0.02);
 
+      console.log(beatIndex);
       if (beatIndex == tsNumerator - 1){
         setBeatIndex(0);
         return;
@@ -116,15 +122,15 @@ export default function Metronome(props) {
     // )
 
     return (
-      <div className={'min-h-screen flex flex-col justify-center gap-20 shadow-[0_0_150px_inset_rgba(0,89,255,0.253)]'}>
-        <BeatVisual/>
+      <div className={`min-h-screen flex flex-col justify-center gap-20 shadow-[0_0_150px_inset] ${isPlaying && ("vignetteAnimation shadow-" + colors.get(currentBar.beats[beatIndex].frequency) + "A")}`}>
+        <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying}/>
         <div className='flex flex-row gap-20 justify-center items-center'>
           <div className='flex flex-col align-middle text-center'>
             <label className='text-white place-items-center'>{bpm + " BPM"}</label>
             <input type='range' max={500} min={1} value={bpm} onChange={(e) => {setBPM(e.target.value)}}/>
           </div>
           <div className='flex flex-col gap-1 justify-center max-w-25'>
-            <select className='rounded-2xl text-white bg-slate-900 text-center appearance-none p-5' value={tsNumerator} onChange={(e) => {setTSN(e.target.value)}}>
+            <select className='rounded-[10px] text-white bg-slate-900 text-center appearance-none p-5' value={tsNumerator} onChange={(e) => {setTSN(e.target.value)}}>
               <option value={1}>1</option>
               <option value={2}>2</option>
               <option value={3}>3</option>
@@ -139,7 +145,7 @@ export default function Metronome(props) {
               <option value={12}>12</option>
             </select>
             <hr className='m-1'/>
-            <select className='rounded-2xl text-white bg-slate-900 text-center appearance-none p-5' value={tsDenominator} onChange={(e) => {setTSD(e.target.value)}}>
+            <select className='rounded-[10px] text-white bg-slate-900 text-center appearance-none p-5' value={tsDenominator} onChange={(e) => {setTSD(e.target.value)}}>
               <option value={1}>1</option>
               <option value={2}>2</option>
               <option value={4}>4</option>
@@ -163,13 +169,14 @@ export default function Metronome(props) {
                 const newBar = constructBar(120, 4, 4);
                 setBar(newBar);
               }
-
+              
+              setBeatIndex(0);
+              console.log(currentBar);
               worker.postMessage({type:"Start", dur:currentBar.beatDuration});
             }
           }>{!isPlaying ? "Play" : "Stop"}
           </button>
         </div>
-
       </div>
     )
 }

@@ -6,3 +6,29 @@
     font-family: "Suse";
     font-weight: 500;
 }
+
+/* @keyframes vignetteAnim {
+    to{
+        box-shadow: black;
+    };
+}
+
+.vignetteAnimation{
+    animation-duration: 50ms;
+    animation-name: vignetteAnim;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+}
+
+@keyframes colorAnim {
+    to{
+        ;
+    };
+}
+
+.colorAnimation{
+    animation-duration: 50ms;
+    animation-name: colorAnim;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+} */

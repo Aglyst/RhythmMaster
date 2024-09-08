@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
 import Metronome from './components/Metronome'
-import bottle from "./assets/sounds/bottle.mp3"
 
 // class AudioPlayer{
 //   audioContext;

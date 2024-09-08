@@ -6,7 +6,7 @@ onmessage = (message) => {
     }
     else if (message.data.type === "Stop"){
         clearInterval(timer);
-        timer=null;
+        timer = null;
     }
 }
 

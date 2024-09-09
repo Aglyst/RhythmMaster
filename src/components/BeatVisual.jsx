@@ -14,7 +14,7 @@ export default function BeatVisual(props) {
       }}>
         test
       </button> */}
-        <ul className='flex flex-row gap-20 justify-center py-10'>
+        <ul className='flex flex-row flex-wrap gap-20 justify-center py-10'>
           {
             beats.map((e) => {
               const color = colors.get(e.frequency);

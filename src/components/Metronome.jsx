@@ -44,7 +44,7 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
     beats.push(newBeat)
   }
 
-  const newBar = new Bar(4, 4, beats);
+  const newBar = new Bar(timeSigNum, timeSigDenom, beats);
   newBar.totalBarDuration = totalBarDuration;
   newBar.beatDuration = (4/timeSigDenom) * quarterNoteDuration;
 
@@ -74,14 +74,13 @@ export default function Metronome(props) {
       }
     }, [bpm, tsNumerator, tsDenominator])
 
-
     worker.onmessage = (message) => {
       const time = audioContext.currentTime;
 
       setVCol(colors.get(currentBar.beats[beatIndex].frequency));
       setTimeout(() => {
         setVCol("black");
-      }, 200);
+      }, 150);
 
       const oscillator = audioContext.createOscillator();
       oscillator.frequency.value = currentBar.beats[beatIndex].frequency;
@@ -105,12 +104,14 @@ export default function Metronome(props) {
     }
 
     return (
-      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out duration-[15] shadow-[0_0_150px_inset] ${(isPlaying) && ("shadow-" + vCol + "A")}`}>
+      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out shadow-[0_0_150px_inset] ${(isPlaying) && ("shadow-" + vCol + "A")}`}>
         <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying} beatLastInd={tsNumerator - 1}/>
         <div className='flex flex-row gap-20 justify-center items-center'>
-          <div className='flex flex-col align-middle text-center'>
-            <label className='text-white place-items-center'>{bpm + " BPM"}</label>
-            <input type='range' max={500} min={1} value={bpm} onChange={(e) => {setBPM(e.target.value)}}/>
+          <div className='flex flex-col align-middle text-center place-items-center'>
+            <button className='text-white rounded-full border-white border-2 w-1/2 p-2 justify-center'>Tap</button>
+            <br/>
+            <label className='text-white py-1'>{bpm + " BPM"}</label>
+            <input type='range' max={400} min={1} value={bpm} onChange={(e) => {setBPM(e.target.value)}}/>
           </div>
           <div className='flex flex-col gap-1 justify-center max-w-25'>
             <select className='rounded-[10px] text-white bg-slate-900 text-center appearance-none p-5' value={tsNumerator} onChange={(e) => {setTSN(e.target.value)}}>
@@ -126,6 +127,10 @@ export default function Metronome(props) {
               <option value={10}>10</option>
               <option value={11}>11</option>
               <option value={12}>12</option>
+              <option value={13}>13</option>
+              <option value={14}>14</option>
+              <option value={15}>15</option>
+              <option value={16}>16</option>
             </select>
             <hr className='m-1'/>
             <select className='rounded-[10px] text-white bg-slate-900 text-center appearance-none p-5' value={tsDenominator} onChange={(e) => {setTSD(e.target.value)}}>
@@ -138,7 +143,7 @@ export default function Metronome(props) {
           </div>
         </div>
         <div className='flex flex-row justify-center'>
-          <button className='text-white rounded p-3 px-4 border-blue-200 border-2'
+          <button className='text-white rounded-full p-3 px-4 border-white border-2'
           onClick={
             () => {
               if (isPlaying){

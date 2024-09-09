@@ -18,7 +18,6 @@ export default function BeatVisual(props) {
           {
             beats.map((e) => {
               const color = colors.get(e.frequency);
-
               return (
                 <li key={e.id}>
                   <button className={`h-10 w-10 transition-colors ease-in-out duration-100 ${"border-" + color} border-2 rounded-[9px] ${isPlaying && (e.id === beatIndex) ? (" bg-" + color) : "bg-black"}`}

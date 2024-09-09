@@ -7,7 +7,6 @@ export class Beat{
   frequency = 440;
   // duration; //ms, time till next note
   // subDivision;
-  
   id;
 }
 
@@ -64,8 +63,9 @@ export default function Metronome(props) {
 
     const [currentBar, setBar] = useState(constructBar(bpm, tsNumerator, tsDenominator));
     const [beatIndex, setBeatIndex] = useState(0);
+    const [vCol, setVCol] = useState("black");
     const [forceUpdateBool, forceUpdate] = useState(false);
-
+    
     useEffect(() => {
       setBar(constructBar(bpm, tsNumerator, tsDenominator))
       if (isPlaying){
@@ -77,6 +77,11 @@ export default function Metronome(props) {
 
     worker.onmessage = (message) => {
       const time = audioContext.currentTime;
+
+      setVCol(colors.get(currentBar.beats[beatIndex].frequency));
+      setTimeout(() => {
+        setVCol("black");
+      }, 200);
 
       const oscillator = audioContext.createOscillator();
       oscillator.frequency.value = currentBar.beats[beatIndex].frequency;
@@ -92,7 +97,6 @@ export default function Metronome(props) {
       oscillator.start(time);
       oscillator.stop(time + 0.02);
 
-      console.log(beatIndex);
       if (beatIndex == tsNumerator - 1){
         setBeatIndex(0);
         return;
@@ -122,7 +126,7 @@ export default function Metronome(props) {
     // )
 
     return (
-      <div className={`min-h-screen flex flex-col justify-center gap-20 shadow-[0_0_150px_inset] ${isPlaying && ("vignetteAnimation shadow-" + colors.get(currentBar.beats[beatIndex].frequency) + "A")}`}>
+      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out duration-[15] ${(isPlaying) && ("shadow-[0_0_150px_inset_" + vCol + "A]")}`}>
         <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying}/>
         <div className='flex flex-row gap-20 justify-center items-center'>
           <div className='flex flex-col align-middle text-center'>
@@ -171,7 +175,6 @@ export default function Metronome(props) {
               }
               
               setBeatIndex(0);
-              console.log(currentBar);
               worker.postMessage({type:"Start", dur:currentBar.beatDuration});
             }
           }>{!isPlaying ? "Play" : "Stop"}

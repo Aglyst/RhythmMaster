@@ -104,30 +104,9 @@ export default function Metronome(props) {
       setBeatIndex(beatIndex + 1);
     }
 
-    // const playBeat = useCallback(
-    //   (freq, time) => {
-        
-    //     const oscillator = audioContext.createOscillator();
-    //     oscillator.frequency.value = freq;
-    //     const gainNode = audioContext.createGain();
-
-    //     gainNode.gain.value = 1;
-    //     gainNode.gain.exponentialRampToValueAtTime(1, time + 0.001);
-    //     gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
-
-    //     oscillator.connect(gainNode);
-    //     gainNode.connect(audioContext.destination);
-
-    //     oscillator.start(time);
-    //     oscillator.stop(time + 0.02);
-
-    //     // console.log(freq + " " + time);
-    //   }
-    // )
-
     return (
-      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out duration-[15] ${(isPlaying) && ("shadow-[0_0_150px_inset_" + vCol + "A]")}`}>
-        <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying}/>
+      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out duration-[15] shadow-[0_0_150px_inset] ${(isPlaying) && ("shadow-" + vCol + "A")}`}>
+        <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying} beatLastInd={tsNumerator - 1}/>
         <div className='flex flex-row gap-20 justify-center items-center'>
           <div className='flex flex-col align-middle text-center'>
             <label className='text-white place-items-center'>{bpm + " BPM"}</label>

@@ -1,7 +1,7 @@
 # Rhythm Master
 
 Metronome app utilizing web workers and the Web Audio API\
-Link: https://{aglyst}.github.io/{rhythmmaster} 
+Link: https://aglyst.github.io/rhythmmaster 
 
 #### Built with:
 - HTML
@@ -12,7 +12,7 @@ Link: https://{aglyst}.github.io/{rhythmmaster}
 - [x] Metronome Functionality
 - [x] Metronome UI
 - [x] Time Signature Support
-- [ ] Tap Button
+- [x] Tap Button
 - [ ] Subdivision Support
 - [ ] Rhythm Practice Games:
   - [ ] Midi-input Tempo Tracker

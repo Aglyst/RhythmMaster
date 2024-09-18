@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 
 import BeatVisual from './BeatVisual';
 import {colors} from '../colors';
@@ -43,7 +43,7 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
 
   const newBar = new Bar(timeSigNum, timeSigDenom, beats);
 
-  const quarterNoteDuration = 60000/bpm;
+  const quarterNoteDuration = 60000/bpm;  // ms
   const beatDuration = (4/timeSigDenom) * quarterNoteDuration;
   const totalBarDuration = beatDuration * timeSigNum;
 
@@ -68,6 +68,8 @@ export default function Metronome(props) {
     const [vCol, setVCol] = useState("black");
     const [forceUpdateBool, forceUpdate] = useState(false);
     
+    const tapIntervals = useRef([]);
+
     useEffect(() => {
       const newBar = constructBar(bpm, tsNumerator, tsDenominator);
       setBar(newBar);
@@ -77,6 +79,33 @@ export default function Metronome(props) {
       }
 
     }, [bpm, tsNumerator, tsDenominator])
+
+    const tapBPM = useCallback(() => {
+      if (tapIntervals.current.length === 4){
+        tapIntervals.current.shift();
+        tapIntervals.current.push(audioContext.currentTime);
+
+        let average = 0;
+        for (let i = 0; i < tapIntervals.current.length-2; i++){
+          average += tapIntervals.current[i+1]-tapIntervals.current[i];
+        }
+        average /= 4;   // average is average quarter note duration in seconds
+        
+        const bpm = 60/average > 400 ? 400 : 60/average;
+
+        setBPM(bpm);    // convert quarter note duration to bpm
+
+        return;
+      }
+
+      if (audioContext.currentTime === 0){
+        const oscillator = audioContext.createOscillator();     // start time
+        oscillator.start();
+        oscillator.stop()
+      }
+
+      tapIntervals.current.push(audioContext.currentTime);
+    })
 
     worker.onmessage = (message) => {
       const time = audioContext.currentTime;
@@ -98,7 +127,7 @@ export default function Metronome(props) {
       gainNode.connect(audioContext.destination);
 
       oscillator.start(time);
-      oscillator.stop(time + 0.02);
+      oscillator.stop(time + 0.03);
 
       if (beatIndex == tsNumerator - 1){
         setBeatIndex(0);
@@ -112,9 +141,9 @@ export default function Metronome(props) {
         <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying} beatLastInd={tsNumerator - 1}/>
         <div className='flex flex-row gap-20 justify-center items-center'>
           <div className='flex flex-col align-middle text-center place-items-center'>
-            <button className='text-white rounded-full border-white border-2 w-1/2 p-2 justify-center'>Tap</button>
+            <button className='text-white rounded-full border-white border-2 w-1/2 p-2 justify-center' onClick={tapBPM}>Tap</button>
             <br/>
-            <label className='text-white py-1'>{bpm + " BPM"}</label>
+            <label className='text-white py-1'>{bpm.toFixed(0) + " BPM"}</label>
             <input type='range' max={400} min={1} value={bpm} onChange={(e) => {setBPM(e.target.value)}}/>
           </div>
           <div className='flex flex-col gap-1 justify-center max-w-25'>

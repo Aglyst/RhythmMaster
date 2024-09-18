@@ -7,13 +7,6 @@ export default function BeatVisual(props) {
 
   return (
     <div>
-      {/* <button onClick={() => {
-        beats.forEach((e, i) => {
-          console.log(i + " " + e.frequency);
-        })
-      }}>
-        test
-      </button> */}
         <ul className='flex flex-row flex-wrap gap-20 justify-center py-10'>
           {
             beats.map((e) => {

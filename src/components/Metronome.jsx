@@ -3,14 +3,14 @@ import React, {useCallback, useEffect, useState} from 'react'
 import BeatVisual from './BeatVisual';
 import {colors} from '../colors';
 
-export class Beat{                           
+class Beat{                           
   frequency = 440;
   // duration; //ms, time till next note
   // subDivision;
   id;
 }
 
-export class Bar{
+class Bar{
   timeSigNum = 4;
   timeSigDenom = 4;
   barDuration = 0;
@@ -34,9 +34,6 @@ export class Bar{
 }
 
 function constructBar(bpm, timeSigNum, timeSigDenom){
-  const quarterNoteDuration = 60000/bpm;
-  const totalBarDuration = quarterNoteDuration * timeSigNum; // TODO: does not support non quarter note time signatures i.e 7/8 
-  
   const beats = []
   for (let i = 0; i < timeSigNum; i++){
     const newBeat = new Beat();
@@ -45,6 +42,11 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
   }
 
   const newBar = new Bar(timeSigNum, timeSigDenom, beats);
+
+  const quarterNoteDuration = 60000/bpm;
+  const beatDuration = (4/timeSigDenom) * quarterNoteDuration;
+  const totalBarDuration = beatDuration * timeSigNum;
+
   newBar.totalBarDuration = totalBarDuration;
   newBar.beatDuration = (4/timeSigDenom) * quarterNoteDuration;
 
@@ -67,11 +69,13 @@ export default function Metronome(props) {
     const [forceUpdateBool, forceUpdate] = useState(false);
     
     useEffect(() => {
-      setBar(constructBar(bpm, tsNumerator, tsDenominator))
+      const newBar = constructBar(bpm, tsNumerator, tsDenominator);
+      setBar(newBar);
       if (isPlaying){
-        worker.postMessage({type:"Stop"})
-        worker.postMessage({type:"Start", dur:currentBar.beatDuration});
+        worker.postMessage({type:"Stop"});
+        worker.postMessage({type:"Start", dur:newBar.beatDuration});
       }
+
     }, [bpm, tsNumerator, tsDenominator])
 
     worker.onmessage = (message) => {

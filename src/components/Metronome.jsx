@@ -41,6 +41,7 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
     beats.push(newBeat)
   }
 
+
   const newBar = new Bar(timeSigNum, timeSigDenom, beats);
 
   const quarterNoteDuration = 60000/bpm;  // ms
@@ -53,7 +54,7 @@ function constructBar(bpm, timeSigNum, timeSigDenom){
   return newBar;
 }
 
-const worker = new Worker("./src/worker.js");
+const worker = new Worker(new URL('../worker.js', import.meta.url));
 
 export default function Metronome(props) {
     const {audioContext} = props;
@@ -73,7 +74,16 @@ export default function Metronome(props) {
 
     useEffect(() => {
       const newBar = constructBar(bpm, tsNumerator, tsDenominator);
+
+      if (currentBar != null){
+        const oldFreqs = currentBar.beats.map((e) => {return e.frequency});
+        for (let i = 0; i < oldFreqs.length; i++){
+          newBar.beats[i].frequency = oldFreqs[i];
+        }
+      }
+
       setBar(newBar);
+
       if (isPlaying){
         worker.postMessage({type:"Stop"});
         worker.postMessage({type:"Start", dur:newBar.beatDuration});
@@ -94,6 +104,7 @@ export default function Metronome(props) {
         
         const bpm = 60/average > 400 ? 400 : 60/average;
 
+        setBTCT(bpm);
         setBPM(bpm);    // convert quarter note duration to bpm
 
         return;
@@ -138,7 +149,7 @@ export default function Metronome(props) {
     }
 
     return (
-      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out shadow-[0_0_150px_inset] ${(isPlaying) && ("shadow-" + vCol + "A")}`}>
+      <div className={`min-h-screen flex flex-col justify-center gap-20 transition-shadow ease-in-out shadow-[0_0_200px_inset] ${(isPlaying) && ("shadow-" + vCol + "A")}`}>
         <BeatVisual beats={currentBar.beats} forceUpdate={forceUpdate} forceUpdateBool={forceUpdateBool} beatIndex={beatIndex} isPlaying={isPlaying} beatLastInd={tsNumerator - 1}/>
         <div className='flex flex-row gap-20 justify-center items-center'>
           <div className='flex flex-col align-middle text-center place-items-center'>

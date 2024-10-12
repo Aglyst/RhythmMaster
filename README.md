@@ -1,7 +1,7 @@
 # Rhythm Master
 
 Metronome app utilizing web workers and the Web Audio API\
-Link: https://aglyst.github.io/RhythmMaster/
+Link: https://aglyst.github.io/RhythmMaster/ (*not currently working*)
 
 #### Built with:
 - HTML

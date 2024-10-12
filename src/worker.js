@@ -1,4 +1,4 @@
-timer = null;
+let timer = null;
 onmessage = (message) => {
     if (message.data.type === "Start"){
         postMessage("");

@@ -60,6 +60,7 @@ export default function Metronome(props) {
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [bpm, setBPM] = useState(120);
+    const [bpmToChangeTo, setBTCT] = useState(120);
     const [tsNumerator, setTSN] = useState(4);
     const [tsDenominator, setTSD] = useState(4);
 
@@ -143,8 +144,8 @@ export default function Metronome(props) {
           <div className='flex flex-col align-middle text-center place-items-center'>
             <button className='text-white rounded-full border-white border-2 w-1/2 p-2 justify-center' onClick={tapBPM}>Tap</button>
             <br/>
-            <label className='text-white py-1'>{bpm.toFixed(0) + " BPM"}</label>
-            <input type='range' max={400} min={1} value={bpm} onChange={(e) => {setBPM(e.target.value)}}/>
+            <label className='text-white py-1'>{Number(bpmToChangeTo).toFixed(0) + " BPM"}</label>
+            <input type='range' max={400} min={1} value={bpmToChangeTo} onChange={(e) => {setBTCT(e.target.value)}} onMouseUp={(e) => {setBPM(e.target.value)}}/>
           </div>
           <div className='flex flex-col gap-1 justify-center max-w-25'>
             <select className='rounded-[10px] text-white bg-slate-900 text-center appearance-none p-5' value={tsNumerator} onChange={(e) => {setTSN(e.target.value)}}>

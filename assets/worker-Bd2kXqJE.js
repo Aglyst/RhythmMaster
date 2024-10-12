@@ -1,0 +1,1 @@
+(function(){"use strict";timer=null,onmessage=t=>{t.data.type==="Start"?(postMessage(""),timer=setInterval(()=>{postMessage("")},t.data.dur)):t.data.type==="Stop"&&(clearInterval(timer),timer=null)}})();
